@@ -4,7 +4,7 @@ import tkinter.font as font
 import socket
 from threading import Thread
 
-''' ******************** Client Part ********************* '''
+''' ******************** Client Part Start ********************* '''
 
 host = 'localhost'
 port = 8091
@@ -12,8 +12,62 @@ port = 8091
 conn = socket.socket()
 conn.connect((host, port))
 
+def sendMoveDetails(movedata):
+    print("Inside sendMoveDetails!!")
+    d1 = dict(movedata)
+    print("The Dictionary that we catched -->", d1)
+    separator = ', '
+    s1 = str(d1)
+    print("The string of the above list is --> ", s1)
 
-''' ******************** Client Part ********************* '''
+    s1 = s1.encode()
+    conn.send(s1)
+
+def quit(event):
+    if messagebox.askyesno('Confirm - Want to Quit the Game ?', 'Do You really want to Quit the Game ?'):
+        conn.send("q".encode())
+        receiver.join()   # To make this thread end first and then Quit the Game
+        conn.close()
+
+def Reciever():
+    global conn
+    move = conn.recv(1024)
+    move = move.decode()
+    while move != "You just quitted the Game":
+        print("Server Echoing {}".format(move))
+        move = conn.recv(1024)
+        move = move.decode()
+    conn.close()
+    root.quit()
+
+receiver = Thread(target=Reciever)    # Made a Reciever thread to read the data sent by other clients
+receiver.start()
+
+def entryText(event):
+    global initialcolumnInput, initialrowInput, finalcolumnInput, finalrowInput
+    initcolumn = initialcolumnInput.get()
+    initcolumn = initcolumn.lower()
+    initrow = initialrowInput.get()
+    initrow = initrow.lower()
+    finalrow = finalrowInput.get()
+    finalrow = finalrow.lower()
+    finalcolumn = finalcolumnInput.get()
+    finalcolumn = finalcolumn.lower()
+    print("Message from the Init column textfiled --> ", initcolumn)
+    print("Message from the Init row textfiled --> ", initrow)
+    print("Message from the Final column textfiled --> ", finalcolumn)
+    print("Message from the Final row textfiled --> ", finalrow)
+
+    moveDict = { 'ic' : initcolumn, 'ir' : initrow, 'fc' : finalcolumn, 'fr' : finalrow }
+
+    sendMoveDetails(moveDict)
+
+    initialcolumnInput.delete(0,END)
+    initialrowInput.delete(0,END)
+    finalcolumnInput.delete(0,END)
+    finalrowInput.delete(0, END)
+
+''' ******************** Client Part End ********************* '''
 root = Tk()
 
 monitor_width = root.winfo_screenwidth()
@@ -73,64 +127,6 @@ def Create_Board():
                 temp.grid(row = r,column = c,ipadx = 25,ipady = 20)        
 
 
-def sendMoveDetails(movedata):
-    print("Inside sendMoveDetails!!")
-    # l1 = list(movedata)
-    # print("The List that we catched -> ", l1)
-    d1 = dict(movedata)
-    print("The Dictionary that we catched -->", d1)
-    separator = ', '
-    s1 = str(d1)
-    print("The string of the above list is --> ", s1)
-
-    s1 = s1.encode()
-    conn.send(s1)
-
-def quit():
-    if messagebox.askyesno('Confirm - Want to Quit the Game ?', 'Do You really want to Quit the Game ?'):
-        conn.send("q".encode())
-        print("The Server sent --> ",conn.recv(1024).decode())
-        # receiver.join()   # TODO To make this thread end first and then Quit the Game
-        conn.close()
-        root.quit()
-
-def Reciever():
-    global conn
-    move = conn.recv(1024)
-    move = move.decode()
-    while move != "q":
-        print("Server Echoing {}".format(move))
-        move = conn.recv(1024)
-        messagemove = move.decode()
-    conn.close()
-
-receiver = Thread(target=Reciever)    # Made a Reciever thread to read the data sent by other clients
-receiver.start()
-
-def entryText(event):
-    global initialcolumnInput, initialrowInput, finalcolumnInput, finalrowInput
-    initcolumn = initialcolumnInput.get()
-    initcolumn = initcolumn.lower()
-    initrow = initialrowInput.get()
-    initrow = initrow.lower()
-    finalrow = finalrowInput.get()
-    finalrow = finalrow.lower()
-    finalcolumn = finalcolumnInput.get()
-    finalcolumn = finalcolumn.lower()
-    print("Message from the Init column textfiled --> ", initcolumn)
-    print("Message from the Init row textfiled --> ", initrow)
-    print("Message from the Final column textfiled --> ", finalcolumn)
-    print("Message from the Final row textfiled --> ", finalrow)
-
-    moveDict = { 'ic' : initcolumn, 'ir' : initrow, 'fc' : finalcolumn, 'fr' : finalrow }
-
-    sendMoveDetails(moveDict)
-
-    initialcolumnInput.delete(0,END)
-    initialrowInput.delete(0,END)
-    finalcolumnInput.delete(0,END)
-    finalrowInput.delete(0, END)
-
 Create_Board()  # Creating the Chess Board
 
 Label(moveInput, text = "Enter the Row and Column Below to Make a Move", font = myFont, fg = '#4169e1').pack(side = TOP, expand = True, pady = 10)
@@ -158,9 +154,9 @@ submitMove = Button(container3, text = 'Submit', font = buttonfont, fg = '#80008
 submitMove.pack(side = LEFT, expand = True, ipadx = 5, ipady = 5, pady = 5)
 submitMove.bind("<Button>", entryText)
 
-quitGame = Button(container3, text = 'Quit', font = buttonfont, fg = '#800080', bg = '#ffc107', borderwidth = 0, command = quit)
+quitGame = Button(container3, text = 'Quit', font = buttonfont, fg = '#800080', bg = '#ffc107', borderwidth = 0)
 quitGame.pack(side = LEFT, expand = True, ipadx = 5, ipady = 5, pady = 5)
-
+quitGame.bind("<Button>", quit)
 
 
 frame.pack(expand=True) # Making the Positioning of the Board onto the Center of the window generated.

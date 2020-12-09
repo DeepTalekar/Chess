@@ -22,7 +22,7 @@ class Move (threading.Thread):
 
         stringDict = self.client.recv(1024)
         stringDict = stringDict.decode()
-        if stringDict != 'q':
+        if stringDict != 'q':       # If the Client Quits the Game without making a Move
             self.moveMade(stringDict)
 
         while stringDict != 'q':
@@ -49,6 +49,7 @@ soc.listen(5)
 while True:
     print("| Waiting for the Client |")
     client, address = soc.accept()
+    print("Established Connection with a Client having the address ~ ", address)
     Move(client, address).start()
     
 # Generally we want to keep the Server Running so below statements are useless but its just for the practice
