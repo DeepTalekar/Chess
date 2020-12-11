@@ -33,24 +33,84 @@ def Reciever():
     global conn
     move = conn.recv(1024)
     move = move.decode()
+    if move != "You just quitted the Game":
+        makeMove(move)
     while move != "You just quitted the Game":
         print("Server Echoing {}".format(move))
         move = conn.recv(1024)
         move = move.decode()
+        if move != "You just quitted the Game":
+            makeMove(move)
     conn.close()
     root.quit()
 
 receiver = Thread(target=Reciever)    # Made a Reciever thread to read the data sent by other clients
 receiver.start()
 
+def findindexOf(row):
+    global board
+    for i in range(len(board)):
+        if(row == board[i][0]):
+            return i
+
+# When the Server Will Echo We will Make a Move and also the change on the Board's of other Client's will be reflected
+def makeMove(move):
+    global board, frame
+    inittemp = Label(frame)
+    finaltemp = Label(frame)
+    displayMove = eval(move)
+    print("||Just going to make a move on the board||")
+    print("The Dict in makeMove Function: ", displayMove)
+
+    # Finding the Index of the Initial and Final Column on the Board
+    initcolumn = board[0].index(displayMove['ic'])
+    finalcolumn = board[0].index(displayMove['fc'])
+    print("The Initial column: ", initcolumn)
+    print("The Final column: ", finalcolumn)
+
+    # Finding the Index of the Initial and Final Row on the Board
+    initrow = findindexOf(displayMove['ir'])
+    finalrow = findindexOf(displayMove['fr'])
+    print("The Initial row: ", initrow)
+    print("The Final row: ", finalrow)
+
+    initElement = board[initrow][initcolumn]
+    finalElement = board[finalrow][finalcolumn]
+    print("The Initial Position consited of: ", initElement)
+    print("The Final Position consited of: ", finalElement)
+
+    # Since we can't access the Background color and text on the specific cell of the grid 
+    # We have to re-render the Whole board
+    # Also the Board List is been modified
+    board[initrow][initcolumn] = finalElement
+    board[finalrow][finalcolumn] = initElement
+
+    Create_Board()      
+
+    # print(board)
+
+    # inittemp.grid(row = initrow, column = initcolumn)
+    # initbg = inittemp.cget("bg")                      # Can try to access the Text and print it on the next line
+    # print("Final BG: '{}' <--".format(initbg))        # We will get the System Default Background Color 
+
+    # inittemp.configure(text = finalElement, font = fontsize)
+    # print("After Config init",inittemp)
+
+    # finaltemp.grid(row = finalrow, column = finalcolumn)
+    # finalbg = finaltemp['bg']
+    # print("Final BG: '{}' <--".format(finalbg))
+
+    # finaltemp.configure(text = initElement, font = fontsize)
+    # print("After Config final",finaltemp)
+
 def entryText(event):
     global initialcolumnInput, initialrowInput, finalcolumnInput, finalrowInput
     initcolumn = initialcolumnInput.get()
     initcolumn = initcolumn.lower()
     initrow = initialrowInput.get()
-    initrow = initrow.lower()
+    initrow = int(initrow.lower())
     finalrow = finalrowInput.get()
-    finalrow = finalrow.lower()
+    finalrow = int(finalrow.lower())
     finalcolumn = finalcolumnInput.get()
     finalcolumn = finalcolumn.lower()
     print("Message from the Init column textfiled --> ", initcolumn)
