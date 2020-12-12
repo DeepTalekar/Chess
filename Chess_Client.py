@@ -23,7 +23,7 @@ def sendMoveDetails(movedata):
     s1 = s1.encode()
     conn.send(s1)
 
-def quit(event):
+def quit(event = None):
     if messagebox.askyesno('Confirm - Want to Quit the Game ?', 'Do You really want to Quit the Game ?'):
         conn.send("q".encode())
         receiver.join()   # To make this thread end first and then Quit the Game
@@ -79,6 +79,12 @@ def makeMove(move):
     print("The Initial Position consited of: ", initElement)
     print("The Final Position consited of: ", finalElement)
 
+    # If there is an piece in place of final element we directly replace it with ' '
+    if finalElement == ' ':
+        pass
+    else: 
+        finalElement = ' '
+        pass
     # Since we can't access the Background color and text on the specific cell of the grid 
     # We have to re-render the Whole board
     # Also the Board List is been modified
@@ -128,6 +134,8 @@ def entryText(event):
     finalrowInput.delete(0, END)
 
 ''' ******************** Client Part End ********************* '''
+
+''' ******************** GUI Part Start *********************** '''
 root = Tk()
 
 monitor_width = root.winfo_screenwidth()
@@ -226,4 +234,7 @@ container3.pack(expand = True, side = 'bottom', pady = 10, fill = X)
 container1.pack(expand = True, side = 'bottom', pady = 10, fill = X)
 container2.pack(expand = True, side = 'bottom', pady = 10, fill = X)
 
+# If one tries to close the Window using the Close Button on the window then we will confirm it
+root.protocol('WM_DELETE_WINDOW', quit)     
 root.mainloop()
+''' ******************** GUI Part End *********************** '''
