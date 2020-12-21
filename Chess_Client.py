@@ -40,12 +40,38 @@ def Reciever():
         move = conn.recv(1024)
         move = move.decode()
         if move != "You just quitted the Game":
-            makeMove(move)
+            if move != "Reset_Board":
+                makeMove(move)
+            else:
+                reset_board()
     conn.close()
     root.quit()
 
 receiver = Thread(target=Reciever)    # Made a Reciever thread to read the data sent by other clients
 receiver.start()
+
+def reset(event):
+    if messagebox.askquestion("Confirm - Reset Board","Do you want to Reset the Current Board ?", icon = 'warning'):
+        resetMessage = "Reset_Board"
+        conn.send(resetMessage.encode())
+    
+
+def reset_board():
+    global board
+    board = [
+        [' ','a','b','c','d','e','f','g','h'],
+        [8,'♜','♞','♝','♚','♛','♝','♞','♜'],
+        [7,'♟','♟','♟','♟','♟','♟','♟','♟'],
+        [6,'   ','   ','   ','   ','   ','   ','   ','   '],
+        [5,'   ','   ','   ','   ','   ','   ','   ','   '],
+        [4,'   ','   ','   ','   ','   ','   ','   ','   '],
+        [3,'   ','   ','   ','   ','   ','   ','   ','   '],
+        [2,'♙','♙','♙','♙','♙','♙','♙','♙'],
+        [1,'♖','♘','♗','♔','♕','♗','♘','♖']
+    ]
+
+    Create_Board()
+    print("Board Reset Successful!")
 
 def findindexOf(row):
     global board
@@ -138,9 +164,10 @@ def entryText(event):
 ''' ******************** GUI Part Start *********************** '''
 root = Tk()
 
-monitor_width = root.winfo_screenwidth()
-monitor_height = root.winfo_screenheight()
-root.geometry("%dx%d" % (monitor_width, monitor_height))
+# monitor_width = root.winfo_screenwidth()
+# monitor_height = root.winfo_screenheight()
+# root.geometry("%dx%d" % (monitor_width, monitor_height))
+root.state('zoomed')
 
 myFont = font.Font(family="Courier",size=20,weight="bold")
 
@@ -222,6 +249,12 @@ submitMove = Button(container3, text = 'Submit', font = buttonfont, fg = '#80008
 submitMove.pack(side = LEFT, expand = True, ipadx = 5, ipady = 5, pady = 5)
 submitMove.bind("<Button>", entryText)
 
+# Reset Board via Button
+resetBoard = Button(container3, text = 'Reset Board', font = buttonfont, fg = '#800080', bg = '#ffc107', borderwidth = 0)
+resetBoard.pack(side = LEFT, expand = True, ipadx = 5, ipady = 5, pady = 5)
+resetBoard.bind("<Button>", reset)
+
+# Quit the Game via Button
 quitGame = Button(container3, text = 'Quit', font = buttonfont, fg = '#800080', bg = '#ffc107', borderwidth = 0)
 quitGame.pack(side = LEFT, expand = True, ipadx = 5, ipady = 5, pady = 5)
 quitGame.bind("<Button>", quit)

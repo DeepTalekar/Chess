@@ -22,25 +22,18 @@ class Move (threading.Thread):
 
         stringDict = self.client.recv(1024)
         stringDict = stringDict.decode()
-        if stringDict != 'q':       # If the Client Quits the Game without making a Move
-            self.moveMade(stringDict)
 
         while stringDict != 'q':
             [soc.send(stringDict.encode()) for soc in clist]
             print("The data recieved from the Client with address {} is --> {}".format(self.add, stringDict))
             stringDict = self.client.recv(1024)
             stringDict = stringDict.decode()
-            if stringDict != 'q':
-                self.moveMade(stringDict)
 
         print("The Client with the address {} has been Disconnected".format(self.add))
         self.client.send("You just quitted the Game".encode())
         clist.remove(self.client)
         self.client.close()
 
-    def moveMade(self,stringDict):
-       moveDict = eval(stringDict)
-       print("Just Converted the String to Dictionary again --> ", moveDict)
 
 soc.bind((host, port))
 
